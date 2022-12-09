@@ -6,8 +6,9 @@ import (
 	"strings"
 )
 
-func PasswordSearch(search string) (string, error) {
-	cmd := exec.Command("op", "item", "get", "--fields", "label=password", search)
+func PasswordSearch(search string, v *Vpn) (string, error) {
+	v.log("Getting password from 1Password...")
+	cmd := exec.Command("/usr/local/bin/op", "item", "get", "--fields", "label=password", search)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return "", err
@@ -19,5 +20,6 @@ func PasswordSearch(search string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	v.log("Password retrieved...")
 	return strings.Trim(string(bytes), " \n\t"), nil
 }

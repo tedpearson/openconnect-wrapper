@@ -1,8 +1,9 @@
 package main
 
 import (
-	"anyconnect-wrapper/internal/app"
 	"log"
+
+	"openconnect-wrapper/internal/app"
 )
 
 func main() {
