@@ -3,7 +3,6 @@ package app
 import (
 	"bufio"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -79,8 +78,7 @@ func (v *Vpn) Connect(config Connection) {
 	if err != nil {
 		v.error(err)
 	}
-	// fixme: how to catch panic in goroutine
-	v.menu.SetConnected(Connected)
+	v.menu.SetConnected(Connecting)
 	go v.consumeLoop(reader)
 }
 
@@ -102,7 +100,6 @@ func (v *Vpn) consumeLoop(r *bufio.Reader) {
 		text, err := r.ReadString('\n')
 		if err != nil {
 			if errors.Is(err, io.EOF) {
-				// fixme: show reason
 				v.log("openconnect exited.")
 				v.uiChan <- Disconnected
 				v.menu.SetConnected(Disconnected)
@@ -124,8 +121,10 @@ func (v *Vpn) handleLine(text string) {
 	print("output:" + text)
 	v.log(text)
 	if connectedPattern.MatchString(text) {
+		v.menu.SetConnected(Connected)
 		v.uiChan <- Connected
 	} else if disconnectedPattern.MatchString(text) {
+		v.menu.SetConnected(Disconnected)
 		v.uiChan <- Disconnected
 	}
 }
@@ -155,8 +154,6 @@ func (v *Vpn) Listen() {
 			switch cmd {
 			case Connect:
 				config := ReadPreferences(v.app.Preferences())
-				v.log(fmt.Sprintf("%+v", config))
-				println("HELLO")
 				v.Connect(config.Connection)
 			case Disconnect:
 				v.Disconnect()
